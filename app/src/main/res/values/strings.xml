@@ -1,0 +1,5 @@
+<resources>
+    <string name="app_name">Image Overlay</string>
+    <string name="button_select_photo">Select Photo</string>
+    <string name="action_settings">Settings</string>
+</resources>
