@@ -9,6 +9,9 @@ import android.content.pm.ResolveInfo;
 import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.graphics.Canvas;
+import android.graphics.Paint;
+import android.graphics.drawable.BitmapDrawable;
 import android.net.Uri;
 import android.os.Environment;
 import android.provider.MediaStore;
@@ -36,6 +39,7 @@ public class MainActivity extends ActionBarActivity {
     private static final String IMAGEVIEW_VISIBILITY_STORAGE_KEY = "imageviewvisibility";
     private ImageView mImageView;
     private Bitmap mImageBitmap;
+    private Button overlayBtn;
 
     private String mCurrentPhotoPath;
 
@@ -153,6 +157,23 @@ public class MainActivity extends ActionBarActivity {
         startActivityForResult(takePictureIntent, actionCode);
     }
 
+    public void addOverlayToImage() {
+
+        Bitmap bitmap = ((BitmapDrawable)mImageView.getDrawable()).getBitmap();
+        bitmap = bitmap.copy(Bitmap.Config.RGB_565, true);
+
+        Bitmap overlay = BitmapFactory.decodeResource(MainActivity.this.getResources(),
+                R.drawable.cats_head);
+
+        // Draw overlay:
+        Canvas canvas = new Canvas(bitmap);
+        Paint paint = new Paint(Paint.FILTER_BITMAP_FLAG);
+        canvas.drawBitmap(overlay, 0, 0, paint);
+
+        mImageView.setImageDrawable(new BitmapDrawable(getResources(), bitmap));
+
+    }
+
     private void selectImage() {
         final String takePhoto = getString(R.string.take_photo);
         final String loadPhoto = getString(R.string.load_photo);
@@ -210,6 +231,13 @@ public class MainActivity extends ActionBarActivity {
                 MediaStore.ACTION_IMAGE_CAPTURE
         );
 
+        overlayBtn = (Button) findViewById(R.id.btnOverlay);
+        overlayBtn.setOnClickListener(new View.OnClickListener() {
+            public void onClick(View v) {
+                addOverlayToImage();
+            }
+        });
+
         mAlbumStorageDirFactory = new BaseAlbumDirFactory();
     }
 
@@ -220,6 +248,8 @@ public class MainActivity extends ActionBarActivity {
                 if (resultCode == RESULT_OK) {
                     handleCameraPhoto();
                 }
+
+                overlayBtn.setVisibility(View.VISIBLE);
                 break;
             case LOAD_IMAGE_FILE:
                 Uri selectedImage = data.getData();
@@ -231,6 +261,8 @@ public class MainActivity extends ActionBarActivity {
                 cursor.close();
 
                 this.mImageView.setImageBitmap(BitmapFactory.decodeFile(filePath));
+
+                overlayBtn.setVisibility(View.VISIBLE);
                 break;
             default:
                 break;

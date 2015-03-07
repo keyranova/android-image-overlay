@@ -1,6 +1,7 @@
 <resources>
     <string name="app_name">Image Overlay</string>
     <string name="button_select_photo">Select Photo</string>
+    <string name="button_overlay">Add Overlay</string>
     <string name="action_settings">Settings</string>
     <string name="album_name">Image Overlay</string>
     <string name="cannot">Cannot</string>
