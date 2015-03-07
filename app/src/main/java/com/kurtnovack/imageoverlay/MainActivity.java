@@ -39,7 +39,9 @@ public class MainActivity extends ActionBarActivity {
     private static final String IMAGEVIEW_VISIBILITY_STORAGE_KEY = "imageviewvisibility";
     private ImageView mImageView;
     private Bitmap mImageBitmap;
+    private Bitmap tempBitmap;
     private Button overlayBtn;
+    private Button clearBtn;
 
     private String mCurrentPhotoPath;
 
@@ -157,9 +159,9 @@ public class MainActivity extends ActionBarActivity {
         startActivityForResult(takePictureIntent, actionCode);
     }
 
-    public void addOverlayToImage() {
-
+    private void addOverlayToImage() {
         Bitmap bitmap = ((BitmapDrawable)mImageView.getDrawable()).getBitmap();
+        tempBitmap = bitmap;
         bitmap = bitmap.copy(Bitmap.Config.RGB_565, true);
 
         Bitmap overlay = BitmapFactory.decodeResource(MainActivity.this.getResources(),
@@ -172,6 +174,15 @@ public class MainActivity extends ActionBarActivity {
 
         mImageView.setImageDrawable(new BitmapDrawable(getResources(), bitmap));
 
+        overlayBtn.setVisibility(View.GONE);
+        clearBtn.setVisibility(View.VISIBLE);
+    }
+
+    private void removeOverlay() {
+        mImageView.setImageDrawable(new BitmapDrawable(getResources(), tempBitmap));
+
+        overlayBtn.setVisibility(View.VISIBLE);
+        clearBtn.setVisibility(View.GONE);
     }
 
     private void selectImage() {
@@ -235,6 +246,14 @@ public class MainActivity extends ActionBarActivity {
         overlayBtn.setOnClickListener(new View.OnClickListener() {
             public void onClick(View v) {
                 addOverlayToImage();
+            }
+        });
+
+        clearBtn = (Button) findViewById(R.id.btnClear);
+        clearBtn.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                removeOverlay();
             }
         });
 
