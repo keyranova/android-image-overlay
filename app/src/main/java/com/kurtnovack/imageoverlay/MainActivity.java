@@ -37,6 +37,88 @@ public class MainActivity extends ActionBarActivity {
     private AlbumStorageDirFactory mAlbumStorageDirFactory = null;
 
 
+    Button.OnClickListener mTakePicOnClickListener;
+    {
+        mTakePicOnClickListener = new Button.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                dispatchTakePictureIntent(REQUEST_IMAGE_CAPTURE);
+            }
+        };
+    }
+
+    @Override
+    protected void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        setContentView(R.layout.activity_main);
+
+        Button picBtn = (Button) findViewById(R.id.btnTakePhoto);
+        setBtnListenerOrDisable(
+                picBtn,
+                mTakePicOnClickListener,
+                MediaStore.ACTION_IMAGE_CAPTURE
+        );
+
+        Button chooseBtn = (Button) findViewById(R.id.btnChoosePhoto);
+        chooseBtn.setOnClickListener(new View.OnClickListener() {
+            public void onClick(View v) {
+                Intent intent = new Intent(Intent.ACTION_PICK, MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
+                intent.setType("image/*");
+                startActivityForResult(intent, LOAD_IMAGE_FILE);
+            }
+        });
+
+        mAlbumStorageDirFactory = new BaseAlbumDirFactory();
+    }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        switch(requestCode) {
+            case REQUEST_IMAGE_CAPTURE:
+                if (resultCode == RESULT_OK) {
+                    sendPhotoPath();
+                }
+
+                break;
+            case LOAD_IMAGE_FILE:
+                Uri selectedImage = data.getData();
+                String [] filePathColumn = {MediaStore.Images.Media.DATA};
+                Cursor cursor = getContentResolver().query(selectedImage, filePathColumn, null, null, null);
+                cursor.moveToFirst();
+                int columnIndex = cursor.getColumnIndex(filePathColumn[0]);
+                mCurrentPhotoPath = cursor.getString(columnIndex);
+                cursor.close();
+
+                sendPhotoPath();
+
+                break;
+            default:
+                break;
+        }
+    }
+
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        // Inflate the menu; this adds items to the action bar if it is present.
+        getMenuInflater().inflate(R.menu.menu_main, menu);
+        return true;
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        // Handle action bar item clicks here. The action bar will
+        // automatically handle clicks on the Home/Up button, so long
+        // as you specify a parent activity in AndroidManifest.xml.
+        int id = item.getItemId();
+
+        //noinspection SimplifiableIfStatement
+        if (id == R.id.action_settings) {
+            return true;
+        }
+
+        return super.onOptionsItemSelected(item);
+    }
+
     /* Photo album for this application */
     private String getAlbumName() {
         return getString(R.string.album_name);
@@ -111,32 +193,6 @@ public class MainActivity extends ActionBarActivity {
         startActivityForResult(takePictureIntent, actionCode);
     }
 
-//    private void addOverlayToImage() {
-//        Bitmap bitmap = ((BitmapDrawable)mImageView.getDrawable()).getBitmap();
-//        tempBitmap = bitmap;
-//        bitmap = bitmap.copy(Bitmap.Config.RGB_565, true);
-//
-//        Bitmap overlay = BitmapFactory.decodeResource(MainActivity.this.getResources(),
-//                R.drawable.cats_head);
-//
-//        // Draw overlay:
-//        Canvas canvas = new Canvas(bitmap);
-//        Paint paint = new Paint(Paint.FILTER_BITMAP_FLAG);
-//        canvas.drawBitmap(overlay, 0, 0, paint);
-//
-//        mImageView.setImageDrawable(new BitmapDrawable(getResources(), bitmap));
-//
-//        overlayBtn.setVisibility(View.GONE);
-//        clearBtn.setVisibility(View.VISIBLE);
-//    }
-//
-//    private void removeOverlay() {
-//        mImageView.setImageDrawable(new BitmapDrawable(getResources(), tempBitmap));
-//
-//        overlayBtn.setVisibility(View.VISIBLE);
-//        clearBtn.setVisibility(View.GONE);
-//    }
-
     private void sendPhotoPath() {
         if (mCurrentPhotoPath != null) {
             Intent intent = new Intent(this, AddOverlayActivity.class);
@@ -144,107 +200,6 @@ public class MainActivity extends ActionBarActivity {
             startActivity(intent);
             mCurrentPhotoPath = null;
         }
-    }
-
-    Button.OnClickListener mTakePicOnClickListener;
-    {
-        mTakePicOnClickListener = new Button.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                dispatchTakePictureIntent(REQUEST_IMAGE_CAPTURE);
-            }
-        };
-    }
-
-    @Override
-    protected void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_main);
-
-        Button picBtn = (Button) findViewById(R.id.btnTakePhoto);
-        setBtnListenerOrDisable(
-                picBtn,
-                mTakePicOnClickListener,
-                MediaStore.ACTION_IMAGE_CAPTURE
-        );
-
-        Button chooseBtn = (Button) findViewById(R.id.btnChoosePhoto);
-        chooseBtn.setOnClickListener(new View.OnClickListener() {
-            public void onClick(View v) {
-                Intent intent = new Intent(Intent.ACTION_PICK, MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
-                intent.setType("image/*");
-                startActivityForResult(intent, LOAD_IMAGE_FILE);
-            }
-        });
-
-        mAlbumStorageDirFactory = new BaseAlbumDirFactory();
-    }
-
-    @Override
-    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
-        switch(requestCode) {
-            case REQUEST_IMAGE_CAPTURE:
-                if (resultCode == RESULT_OK) {
-                    sendPhotoPath();
-                }
-
-                break;
-            case LOAD_IMAGE_FILE:
-                Uri selectedImage = data.getData();
-                String [] filePathColumn = {MediaStore.Images.Media.DATA};
-                Cursor cursor = getContentResolver().query(selectedImage, filePathColumn, null, null, null);
-                cursor.moveToFirst();
-                int columnIndex = cursor.getColumnIndex(filePathColumn[0]);
-                mCurrentPhotoPath = cursor.getString(columnIndex);
-                cursor.close();
-
-                sendPhotoPath();
-
-                break;
-            default:
-                break;
-        }
-    }
-
-    // Some lifecycle callbacks so that the image can survive orientation change
-//    @Override
-//    protected void onSaveInstanceState(Bundle outState) {
-//        outState.putParcelable(BITMAP_STORAGE_KEY, mImageBitmap);
-//        outState.putBoolean(IMAGEVIEW_VISIBILITY_STORAGE_KEY, (mImageBitmap != null) );
-//        super.onSaveInstanceState(outState);
-//    }
-//
-//    @Override
-//    protected void onRestoreInstanceState(Bundle savedInstanceState) {
-//        super.onRestoreInstanceState(savedInstanceState);
-//        mImageBitmap = savedInstanceState.getParcelable(BITMAP_STORAGE_KEY);
-//        mImageView.setImageBitmap(mImageBitmap);
-//        mImageView.setVisibility(
-//                savedInstanceState.getBoolean(IMAGEVIEW_VISIBILITY_STORAGE_KEY) ?
-//                        ImageView.VISIBLE : ImageView.INVISIBLE
-//        );
-//    }
-
-    @Override
-    public boolean onCreateOptionsMenu(Menu menu) {
-        // Inflate the menu; this adds items to the action bar if it is present.
-        getMenuInflater().inflate(R.menu.menu_main, menu);
-        return true;
-    }
-
-    @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
-        // Handle action bar item clicks here. The action bar will
-        // automatically handle clicks on the Home/Up button, so long
-        // as you specify a parent activity in AndroidManifest.xml.
-        int id = item.getItemId();
-
-        //noinspection SimplifiableIfStatement
-        if (id == R.id.action_settings) {
-            return true;
-        }
-
-        return super.onOptionsItemSelected(item);
     }
 
     public static boolean isIntentAvailable(Context context, String action) {

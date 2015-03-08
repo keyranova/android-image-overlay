@@ -35,9 +35,12 @@
 
             <ImageView
                 android:id="@+id/imgOverlay"
-                android:layout_width="180dp"
-                android:layout_height="180dp"
-                android:layout_gravity="center"/>
+                android:layout_width="fill_parent"
+                android:layout_height="fill_parent"
+                android:layout_gravity="center"
+                android:clickable="true"
+                android:background="@drawable/overlay_border"
+                android:scaleType="matrix"/>
 
         </FrameLayout>
 
