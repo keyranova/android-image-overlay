@@ -24,6 +24,7 @@ public class AddOverlayActivity extends ActionBarActivity {
     private ImageView imageBackground;
     private ImageView imageOverlay;
     private Button btnAddOverlay;
+    private Button btnRemoveOverlay;
     private Button btnSave;
 
     // these matrices will be used to move and zoom image
@@ -83,6 +84,14 @@ public class AddOverlayActivity extends ActionBarActivity {
             @Override
             public void onClick(View v) {
                 addOverlay();
+            }
+        });
+
+        btnRemoveOverlay = (Button) findViewById(R.id.btnRemoveOverlay);
+        btnRemoveOverlay.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                removeOverlay();
             }
         });
 
@@ -174,6 +183,14 @@ public class AddOverlayActivity extends ActionBarActivity {
 
         btnAddOverlay.setVisibility(View.INVISIBLE);
         btnSave.setVisibility(View.VISIBLE);
+        btnRemoveOverlay.setVisibility(View.VISIBLE);
+    }
+
+    private void removeOverlay() {
+        imageOverlay.setImageBitmap(null);
+        btnRemoveOverlay.setVisibility(View.INVISIBLE);
+        btnSave.setVisibility(View.INVISIBLE);
+        btnAddOverlay.setVisibility(View.VISIBLE);
     }
 
     private void savePhoto() {
